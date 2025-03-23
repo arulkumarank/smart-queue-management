@@ -1,0 +1,132 @@
+/* Main Styles */
+body {
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.card {
+    transition: background-color 0.3s, color 0.3s;
+    margin-bottom: 20px;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Dark Mode */
+body.dark-mode {
+    background-color: #343a40;
+    color: #f8f9fa;
+}
+
+body.dark-mode .card {
+    background-color: #212529;
+    color: #f8f9fa;
+}
+
+body.dark-mode .table {
+    color: #f8f9fa;
+}
+
+body.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .form-control {
+    background-color: #495057;
+    color: #f8f9fa;
+    border-color: #6c757d;
+}
+
+body.dark-mode .form-control:focus {
+    background-color: #495057;
+    color: #f8f9fa;
+}
+
+/* Bootstrap icon equivalents using emoji for simplicity */
+.bi-list::before {
+    content: "☰";
+    margin-right: 5px;
+}
+
+.bi-people::before {
+    content: "👥";
+    margin-right: 5px;
+}
+
+.bi-person-plus::before {
+    content: "➕👤";
+    margin-right: 5px;
+}
+
+.bi-person-check::before {
+    content: "✅👤";
+    margin-right: 5px;
+}
+
+.bi-arrow-right-circle::before {
+    content: "⏭️";
+    margin-right: 5px;
+}
+
+.bi-plus-circle::before {
+    content: "➕";
+    margin-right: 5px;
+}
+
+.bi-x-circle::before {
+    content: "❌";
+    margin-right: 5px;
+}
+
+.bi-person-circle::before {
+    content: "👤";
+    margin-right: 5px;
+}
+
+/* Animations */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.btn-primary {
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Adding a visual indicator when it's the user's turn */
+.your-turn {
+    animation: pulse 1.5s infinite;
+    background-color: #28a745 !important;
+}
+
+/* Queue progress bar custom styles */
+.progress {
+    height: 10px;
+    border-radius: 5px;
+    margin: 15px 0;
+}
+
+.progress-bar-animated {
+    animation-duration: 1.5s;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 10px;
+    }
+}

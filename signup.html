@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Management System - Sign Up</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow mt-5">
+                    <div class="card-body">
+                        <h2 class="text-center mb-4">Create Account</h2>
+                        <div id="signupMessage" class="alert d-none"></div>
+                        <form id="signupForm">
+                            <div class="mb-3">
+                                <label for="newUsername" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="newUsername" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="newPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="phone" required>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Sign Up</button>
+                                <a href="index.html" class="btn btn-outline-secondary">Back to Login</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('signupForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('newUsername').value;
+                const password = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const email = document.getElementById('email').value;
+                const phone = document.getElementById('phone').value;
+                
+                if (password !== confirmPassword) {
+                    showMessage('Passwords do not match', 'danger');
+                    return;
+                }
+                
+                // Get existing users
+                let users = JSON.parse(localStorage.getItem('users')) || [];
+                
+                // Check if username already exists
+                if (users.some(user => user.username === username)) {
+                    showMessage('Username already exists', 'danger');
+                    return;
+                }
+                
+                // Add new user
+                users.push({
+                    username: username,
+                    password: password,
+                    email: email,
+                    phone: phone,
+                    role: 'user'
+                });
+                
+                localStorage.setItem('users', JSON.stringify(users));
+                showMessage('Account created successfully! Redirecting to login...', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            });
+            
+            function showMessage(message, type) {
+                const messageDiv = document.getElementById('signupMessage');
+                messageDiv.textContent = message;
+                messageDiv.className = `alert alert-${type}`;
+                messageDiv.classList.remove('d-none');
+            }
+        });
+    </script>
+</body>
+</html>

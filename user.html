@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Management System - User Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-light">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 bg-primary text-white p-3 d-flex justify-content-between align-items-center">
+                <h3><i class="bi bi-person-circle"></i> User Dashboard</h3>
+                <div>
+                    <button id="darkModeToggle" class="btn btn-dark me-2">Dark Mode</button>
+                    <button id="logoutBtn" class="btn btn-danger">Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4 justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow mb-4">
+                    <div class="card-body text-center">
+                        <h4 class="card-title">Current Queue Status</h4>
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <div class="p-3 bg-info text-white rounded mb-3">
+                                    <h5>Currently Serving</h5>
+                                    <h3 id="currentlyServingDisplay">-</h3>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 bg-primary text-white rounded mb-3">
+                                    <h5>Your Position</h5>
+                                    <h3 id="yourPositionDisplay">Not in queue</h3>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 bg-secondary text-white rounded mb-3">
+                                    <h5>Estimated Wait</h5>
+                                    <h3 id="estimatedWaitDisplay">-</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="notInQueueCard" class="card shadow mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title text-center">Join the Queue</h4>
+                        <p class="text-center">Join the queue to be served. You'll receive a notification when your turn is approaching.</p>
+                        <div class="d-grid">
+                            <button id="joinQueueBtn" class="btn btn-primary btn-lg">
+                                <i class="bi bi-person-plus"></i> Join Queue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inQueueCard" class="card shadow mb-4 d-none">
+                    <div class="card-body">
+                        <h4 class="card-title text-center">You're in the Queue</h4>
+                        <div class="text-center mb-4">
+                            <div class="progress">
+                                <div id="queueProgress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <p class="text-center" id="queueMessage">Please wait for your turn. There are <span id="peopleAheadCount">0</span> people ahead of you.</p>
+                        <div class="d-grid">
+                            <button id="leaveQueueBtn" class="btn btn-danger">
+                                <i class="bi bi-x-circle"></i> Leave Queue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title text-center">Queue Overview</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Position</th>
+                                        <th>Wait Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="queueOverviewBody">
+                                    <!-- Queue overview will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Your Turn Is Coming!</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Your turn is approaching! Please be ready. If you miss your turn, you will be moved to the end of the queue.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I'm Ready</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Initialize queue if not exists
+            if (!localStorage.getItem('queue')) {
+                localStorage.setItem('queue', JSON.stringify([]));
+            }
+
+            // Check for dark mode preference
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeToggle').textContent = 'Light Mode';
+                document.getElementById('darkModeToggle').className = 'btn btn-light me-2';
+            }
+
+            // Setup elements
+            const notInQueueCard = document.getElementById('notInQueueCard');
+            const inQueueCard = document.getElementById('inQueueCard');
+            const joinQueueBtn = document.getElementById('joinQueueBtn');
+            const leaveQueueBtn = document.getElementById('leaveQueueBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+
+            // Event listeners
+            joinQueueBtn.addEventListener('click', joinQueue);
+            leaveQueueBtn.addEventListener('click', leaveQueue);
+            logoutBtn.addEventListener('click', logout);
+            darkModeToggle.addEventListener('click', toggleDarkMode);
+
+            // Check if user is already in queue
+            checkUserInQueue();
+            
+            // Update queue info every 5 seconds
+            updateQueueInfo();
+            setInterval(updateQueueInfo, 5000);
+
+            function checkUserInQueue() {
+                const queue = JSON.parse(localStorage.getItem('queue'));
+                const userId = currentUser.username;
+                
+                const userIndex = queue.findIndex(item => item.username === userId);
+                
+                if (userIndex !== -1) {
+                    // User is in queue
+                    notInQueueCard.classList.add('d-none');
+                    inQueueCard.classList.remove('d-none');
+                    updateQueueStatus(userIndex);
+                } else {
+                    // User not in queue
+                    notInQueueCard.classList.remove('d-none');
+                    inQueueCard.classList.add('d-none');
+                }
+            }
+
+            function updateQueueInfo() {
+                const queue = JSON.parse(localStorage.getItem('queue'));
+                const currentCustomer = JSON.parse(localStorage.getItem('currentCustomer'));
+                
+                // Update currently serving
+                const currentlyServingDisplay = document.getElementById('currentlyServingDisplay');
+                if (currentCustomer) {
+                    currentlyServingDisplay.textContent = currentCustomer.name;
+                } else {
+                    currentlyServingDisplay.textContent = "None";
+                }
+                
+                // Update queue overview
+                const queueOverviewBody = document.getElementById('queueOverviewBody');
+                queueOverviewBody.innerHTML = '';
+                
+                if (queue.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td colspan="2" class="text-center">Queue is empty</td>';
+                    queueOverviewBody.appendChild(row);
+                } else {
+                    queue.forEach((customer, index) => {
+                        const waitTime = calculateWaitTime(index);
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>~${waitTime} minutes</td>
+                        `;
+                        queueOverviewBody.appendChild(row);
+                    });
+                }
+                
+                // Check if user is in queue
+                checkUserInQueue();
+            }
+
+            function updateQueueStatus(userIndex) {
+                const queue = JSON.parse(localStorage.getItem('queue'));
+                
+                // Update position display
+                document.getElementById('yourPositionDisplay').textContent = userIndex + 1;
+                
+                // Update people ahead count
+                document.getElementById('peopleAheadCount').textContent = userIndex;
+                
+                // Update estimated wait time
+                const waitTime = calculateWaitTime(userIndex);
+                document.getElementById('estimatedWaitDisplay').textContent = `~${waitTime} min`;
+                
+                // Update progress bar
+                const progressPercentage = Math.max(5, 100 - ((userIndex / queue.length) * 100));
+                document.getElementById('queueProgress').style.width = `${progressPercentage}%`;
+                
+                // Check if user is next in line for notification
+                if (userIndex === 0) {
+                    showNotification();
+                }
+            }
+
+            function calculateWaitTime(position) {
+                // Assume 3 minutes per customer on average
+                return (position + 1) * 3;
+            }
+
+            function joinQueue() {
+                const queue = JSON.parse(localStorage.getItem('queue'));
+                const user = JSON.parse(localStorage.getItem('currentUser'));
+                
+                // Check if user is already in queue
+                const userInQueue = queue.some(item => item.username === user.username);
+                
+                if (userInQueue) {
+                    alert('You are already in the queue.');
+                    return;
+                }
+                
+                // Add user to queue
+                const queueItem = {
+                    name: user.username,
+                    email: user.email || '',
+                    phone: user.phone || '',
+                    username: user.username,
+                    joinTime: Date.now(),
+                    id: Date.now().toString()
+                };
+                
+                queue.push(queueItem);
+                localStorage.setItem('queue', JSON.stringify(queue));
+                
+                // Update UI
+                notInQueueCard.classList.add('d-none');
+                inQueueCard.classList.remove('d-none');
+                
+                updateQueueInfo();
+                alert('You have been added to the queue!');
+            }
+
+            function leaveQueue() {
+                if (!confirm('Are you sure you want to leave the queue?')) {
+                    return;
+                }
+                
+                const queue = JSON.parse(localStorage.getItem('queue'));
+                const user = JSON.parse(localStorage.getItem('currentUser'));
+                
+                const newQueue = queue.filter(item => item.username !== user.username);
+                localStorage.setItem('queue', JSON.stringify(newQueue));
+                
+                // Update UI
+                notInQueueCard.classList.remove('d-none');
+                inQueueCard.classList.add('d-none');
+                
+                updateQueueInfo();
+                alert('You have left the queue.');
+            }
+
+            function showNotification() {
+                // Show notification modal
+                const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+                notificationModal.show();
+                
+                // Play sound if available
+                if (typeof Audio !== 'undefined') {
+                    try {
+                        const audio = new Audio('https://cdn.jsdelivr.net/gh/freeCodeCamp/testable-projects-fcc@master/audio/BeepSound.wav');
+                        audio.play();
+                    } catch (e) {
+                        console.log('Audio notification not supported');
+                    }
+                }
+            }
+
+            function toggleDarkMode() {
+                document.body.classList.toggle('dark-mode');
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                localStorage.setItem('darkMode', isDarkMode);
+                
+                // Update button text
+                const button = document.getElementById('darkModeToggle');
+                button.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+                button.className = isDarkMode ? 'btn btn-light me-2' : 'btn btn-dark me-2';
+            }
+
+            function logout() {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>
